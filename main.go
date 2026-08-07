@@ -41,6 +41,7 @@ func loadMetadata(path string) error {
 func setupRoutes() *http.ServeMux {
 	mux := http.NewServeMux()
 
+	// IMDS Root & Leaf Routes
 	mux.HandleFunc("/latest/meta-data/", func(w http.ResponseWriter, r *http.Request) {
 		path := strings.TrimPrefix(r.URL.Path, "/latest/meta-data/")
 
@@ -72,16 +73,19 @@ func setupRoutes() *http.ServeMux {
 		}
 	})
 
+	// Raw User Data Route (#cloud-config)
 	mux.HandleFunc("/latest/user-data", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
 		fmt.Fprint(w, globalMeta.UserData)
 	})
 
+	// Structured JSON Route
 	mux.HandleFunc("/latest/meta-data.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(globalMeta)
 	})
 
+	// Health check
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintln(w, "OK")
